@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Imagens - Acessibilidade Orla</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1, h2 {
+            color: #0078d7;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .icon-grid, .shortcut-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .icon-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .icon-canvas {
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+            background-color: white;
+        }
+        
+        .screenshot-container {
+            margin-top: 20px;
+        }
+        
+        .screenshot-canvas {
+            border: 1px solid #ddd;
+            margin-bottom: 20px;
+            background-color: white;
+        }
+        
+        .location-images {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .location-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .location-canvas {
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+            background-color: white;
+        }
+        
+        .instructions {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-left: 4px solid #0078d7;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            background-color: #0078d7;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        
+        .btn:hover {
+            background-color: #005a9e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gerador de Imagens - Acessibilidade Orla</h1>
+        
+        <div class="instructions">
+            <p><strong>Instruções:</strong> Esta página gera todas as imagens necessárias para o aplicativo. Para cada imagem, clique no botão "Baixar" para salvar a imagem no local correto.</p>
+        </div>
+        
+        <div class="section">
+            <h2>Ícones do PWA</h2>
+            <p>Estes ícones devem ser salvos na pasta <code>icons/</code></p>
+            
+            <div class="icon-grid" id="icon-grid"></div>
+        </div>
+        
+        <div class="section">
+            <h2>Ícones de Atalho</h2>
+            <p>Estes ícones devem ser salvos na pasta <code>icons/</code></p>
+            
+            <div class="shortcut-grid">
+                <div class="icon-item">
+                    <canvas id="map-shortcut" class="icon-canvas" width="96" height="96"></canvas>
+                    <p>map-shortcut.png (96x96)</p>
+                    <button class="btn" onclick="downloadImage('map-shortcut', 'map-shortcut.png')">Baixar</button>
+                </div>
+                <div class="icon-item">
+                    <canvas id="list-shortcut" class="icon-canvas" width="96" height="96"></canvas>
+                    <p>list-shortcut.png (96x96)</p>
+                    <button class="btn" onclick="downloadImage('list-shortcut', 'list-shortcut.png')">Baixar</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Capturas de Tela</h2>
+            <p>Estas capturas de tela devem ser salvas na pasta <code>screenshots/</code></p>
+            
+            <div class="screenshot-container">
+                <h3>Tela do Mapa</h3>
+                <canvas id="screen1" class="screenshot-canvas" width="1280" height="720"></canvas>
+                <button class="btn" onclick="downloadImage('screen1', 'screen1.png')">Baixar</button>
+                
+                <h3>Tela da Lista de Locais</h3>
+                <canvas id="screen2" class="screenshot-canvas" width="1280" height="720"></canvas>
+                <button class="btn" onclick="downloadImage('screen2', 'screen2.png')">Baixar</button>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Imagens de Locais</h2>
+            <p>Estas imagens devem ser salvas na pasta <code>images/</code> (você precisará criar esta pasta)</p>
+            
+            <div class="location-images" id="location-images"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Configurações dos ícones
+        const iconSizes = [72, 96, 128, 144, 152, 192, 384, 512];
+        const locationTypes = [
+            { name: "Rampa de Acesso", id: "ramp" },
+            { name: "Banheiro Acessível", id: "bathroom" },
+            { name: "Estacionamento Reservado", id: "parking" },
+            { name: "Piso Tátil", id: "tactile" },
+            { name: "Centro de Informações", id: "info" },
+            { name: "Restaurante Acessível", id: "restaurant" },
+            { name: "Playground Inclusivo", id: "playground" },
+            { name: "Mirante Acessível", id: "viewpoint" }
+        ];
+        
+        // Função para desenhar o ícone de acessibilidade
+        function drawAccessibilityIcon(ctx, size, color = "#0078d7", iconColor = "#ffffff") {
+            // Limpar o canvas
+            ctx.clearRect(0, 0, size, size);
+            
+            // Desenhar círculo de fundo
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(size/2, size/2, size/2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Desenhar símbolo de acessibilidade
+            ctx.fillStyle = iconColor;
+            
+            // Cabeça (círculo)
+            const headSize = size * 0.2;
+            ctx.beginPath();
+            ctx.arc(size/2, size * 0.25, headSize, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Corpo (símbolo de acessibilidade simplificado)
+            ctx.lineWidth = size * 0.1;
+            ctx.strokeStyle = iconColor;
+            
+            // Braços
+            ctx.beginPath();
+            ctx.moveTo(size * 0.3, size * 0.45);
+            ctx.lineTo(size * 0.7, size * 0.45);
+            ctx.stroke();
+            
+            // Pernas
+            ctx.beginPath();
+            ctx.moveTo(size/2, size * 0.45);
+            ctx.lineTo(size/2, size * 0.7);
+            ctx.stroke();
+            
+            // Roda da cadeira
+            ctx.beginPath();
+            ctx.arc(size/2, size * 0.75, size * 0.15, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+        
+        // Função para desenhar o ícone de mapa
+        function drawMapIcon(ctx, size) {
+            // Limpar o canvas
+            ctx.clearRect(0, 0, size, size);
+            
+            // Desenhar círculo de fundo
+            ctx.fillStyle = "#0078d7";
+            ctx.beginPath();
+            ctx.arc(size/2, size/2, size/2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Desenhar ícone de mapa
+            ctx.fillStyle = "#ffffff";
+            
+            // Desenhar forma de mapa simplificada
+            const margin = size * 0.2;
+            const mapSize = size - (margin * 2);
+            
+            ctx.beginPath();
+            ctx.moveTo(margin, margin);
+            ctx.lineTo(margin + mapSize, margin);
+            ctx.lineTo(margin + mapSize, margin + mapSize);
+            ctx.lineTo(margin, margin + mapSize);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Desenhar linhas do mapa
+            ctx.strokeStyle = "#0078d7";
+            ctx.lineWidth = size * 0.03;
+            
+            // Linha horizontal
+            ctx.beginPath();
+            ctx.moveTo(margin, margin + mapSize/2);
+            ctx.lineTo(margin + mapSize, margin + mapSize/2);
+            ctx.stroke();
+            
+            // Linha vertical
+            ctx.beginPath();
+            ctx.moveTo(margin + mapSize/2, margin);
+            ctx.lineTo(margin + mapSize/2, margin + mapSize);
+            ctx.stroke();
+            
+            // Desenhar marcador
+            ctx.fillStyle = "#0078d7";
+            ctx.beginPath();
+            ctx.arc(margin + mapSize * 0.7, margin + mapSize * 0.3, size * 0.08, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // Função para desenhar o ícone de lista
+        function drawListIcon(ctx, size) {
+            // Limpar o canvas
+            ctx.clearRect(0, 0, size, size);
+            
+            // Desenhar círculo de fundo
+            ctx.fillStyle = "#0078d7";
+            ctx.beginPath();
+            ctx.arc(size/2, size/2, size/2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Desenhar ícone de lista
+            ctx.fillStyle = "#ffffff";
+            
+            const margin = size * 0.25;
+            const listWidth = size - (margin * 2);
+            const lineHeight = size * 0.12;
+            const lineSpacing = size * 0.08;
+            const startY = size * 0.25;
+            
+            // Desenhar linhas da lista
+            for (let i = 0; i < 4; i++) {
+                const y = startY + (i * (lineHeight + lineSpacing));
+                
+                // Bullet point
+                ctx.beginPath();
+                ctx.arc(margin, y + lineHeight/2, lineHeight * 0.3, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Line
+                ctx.fillRect(margin + lineHeight, y, listWidth - lineHeight, lineHeight);
+            }
+        }
+        
+        // Função para desenhar a captura de tela do mapa
+        function drawMapScreenshot(ctx, width, height) {
+            // Limpar o canvas
+            ctx.clearRect(0, 0, width, height);
+            
+            // Desenhar fundo
+            ctx.fillStyle = "#f5f5f5";
+            ctx.fillRect(0, 0, width, height);
+            
+            // Desenhar cabeçalho
+            ctx.fillStyle = "#0078d7";
+            ctx.fillRect(0, 0, width, 60);
+            
+            // Título
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "bold 24px 'Segoe UI', sans-serif";
+            ctx.fillText("Acessibilidade Orla da Atalaia", 20, 40);
+            
+            // Botões de acessibilidade
+            const buttonWidth = 40;
+            const buttonSpacing = 10;
+            let buttonX = width - 50;
+            
+            for (let i = 0; i < 4; i++) {
+                ctx.fillStyle = "#005a9e";
+                ctx.fillRect(buttonX - (i * (buttonWidth + buttonSpacing)), 10, buttonWidth, buttonWidth);
+                buttonX -= buttonWidth + buttonSpacing;
+            }
+            
+            // Desenhar área do mapa
+            ctx.fillStyle = "#e0e0e0";
+            ctx.fillRect(20, 100, width - 40, height - 160);
+            
+            // Desenhar mapa estilizado
+            ctx.fillStyle = "#d0d0d0";
+            
+            // Água
+            ctx.fillStyle = "#b3d1ff";
+            ctx.fillRect(20, 100, width - 40, 200);
+            
+            // Terra
+            ctx.fillStyle = "#e6e6e6";
+            ctx.fillRect(20, 300, width - 40, height - 360);
+            
+            // Estradas
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(100, 300, 20, height - 360);
+            ctx.fillRect(300, 300, 20, height - 360);
+            ctx.fillRect(500, 300, 20, height - 360);
+            ctx.fillRect(700, 300, 20, height - 360);
+            ctx.fillRect(900, 300, 20, height - 360);
+            ctx.fillRect(1100, 300, 20, height - 360);
+            
+            ctx.fillRect(20, 350, width - 40, 20);
+            ctx.fillRect(20, 450, width - 40, 20);
+            ctx.fillRect(20, 550, width - 40, 20);
+            
+            // Marcadores no mapa
+            const markerColors = ["#ff6b6b", "#4ecdc4", "#ffd166", "#6a0572", "#ff9a3c"];
+            const markerPositions = [
+                {x: 200, y: 400},
+                {x: 400, y: 350},
+                {x: 600, y: 500},
+                {x: 800, y: 400},
+                {x: 1000, y: 350},
+                {x: 300, y: 500},
+                {x: 700, y: 550},
+                {x: 900, y: 450}
+            ];
+            
+            markerPositions.forEach((pos, i) => {
+                const color = markerColors[i % markerColors.length];
+                
+                // Círculo do marcador
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, 15, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Ícone dentro do marcador
+                ctx.fillStyle = "#ffffff";
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, 7, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            // Desenhar filtros
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(20, 70, width - 40, 30);
+            
+            // Botões de filtro
+            const filterLabels = ["Todos", "Rampas", "Banheiros", "Estacionamentos", "Piso Tátil", "Braille", "Libras"];
+            const filterWidth = 120;
+            const filterSpacing = 10;
+            let filterX = 30;
+            
+            filterLabels.forEach((label, i) => {
+                if (i === 0) {
+                    ctx.fillStyle = "#0078d7";
+                } else {
+                    ctx.fillStyle = "#e0e0e0";
+                }
+                
+                ctx.fillRect(filterX, 70, filterWidth, 30);
+                
+                ctx.fillStyle = i === 0 ? "#ffffff" : "#333333";
+                ctx.font = "14px 'Segoe UI', sans-serif";
+                ctx.fillText(label, filterX + 10, 90);
+                
+                filterX += filterWidth + filterSpacing;
+            });
+            
+            // Desenhar rodapé
+            ctx.fillStyle = "#333333";
+            ctx.fillRect(0, height - 60, width, 60);
+            
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "14px 'Segoe UI', sans-serif";
+            ctx.fillText("Aplicativo de Acessibilidade da Orla da Atalaia - Aracaju", 20, height - 30);
+            ctx.fillText("Desenvolvido para promover a inclusão e facilitar o acesso para todos", 20, height - 10);
+        }
+        
+        // Função para desenhar a captura de tela da lista
+        function drawListScreenshot(ctx, width, height) {
+            // Limpar o canvas
+            ctx.clearRect(0, 0, width, height);
+            
+            // Desenhar fundo
+            ctx.fillStyle = "#000000";
+            ctx.fillRect(0, 0, width, height);
+            
+            // Desenhar cabeçalho (alto contraste)
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, width, 60);
+            
+            // Título
+            ctx.fillStyle = "#000000";
+            ctx.font = "bold 24px 'Segoe UI', sans-serif";
+            ctx.fillText("Acessibilidade Orla da Atalaia", 20, 40);
+            
+            // Botões de acessibilidade
+            const buttonWidth = 40;
+            const buttonSpacing = 10;
+            let buttonX = width - 50;
+            
+            for (let i = 0; i < 4; i++) {
+                ctx.fillStyle = "#ffffff";
+                ctx.strokeStyle = "#000000";
+                ctx.lineWidth = 2;
+                ctx.fillRect(buttonX - (i * (buttonWidth + buttonSpacing)), 10, buttonWidth, buttonWidth);
+                ctx.strokeRect(buttonX - (i * (buttonWidth + buttonSpacing)), 10, buttonWidth, buttonWidth);
+                buttonX -= buttonWidth + buttonSpacing;
+            }
+            
+            // Desenhar título da seção
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "bold 24px 'Segoe UI', sans-serif";
+            ctx.fillText("Lista de Locais Acessíveis", 20, 100);
+            
+            // Desenhar cards de locais
+            const cardWidth = (width - 60) / 2;
+            const cardHeight = 150;
+            const cardSpacing = 20;
+            
+            const cardPositions = [
+                {x: 20, y: 120},
+                {x: 20 + cardWidth + cardSpacing, y: 120},
+                {x: 20, y: 120 + cardHeight + cardSpacing},
+                {x: 20 + cardWidth + cardSpacing, y: 120 + cardHeight + cardSpacing},
+                {x: 20, y: 120 + (cardHeight + cardSpacing) * 2},
+                {x: 20 + cardWidth + cardSpacing, y: 120 + (cardHeight + cardSpacing) * 2}
+            ];
+            
+            const locationNames = [
+                "Rampa de Acesso - Praia dos Artistas",
+                "Banheiro Acessível - Praça de Eventos",
+                "Estacionamento Reservado - Oceanário",
+                "Piso Tátil - Calçadão Central",
+                "Centro de Informações Turísticas",
+                "Restaurante Acessível - Orla Gastronômica"
+            ];
+            
+            cardPositions.forEach((pos, i) => {
+                // Card background
+                ctx.fillStyle = "#ffffff";
+                ctx.fillRect(pos.x, pos.y, cardWidth, cardHeight);
+                
+                // Image placeholder
+                ctx.fillStyle = "#cccccc";
+                ctx.fillRect(pos.x + 10, pos.y + 10, 130, 130);
+                
+                // Text content
+                ctx.fillStyle = "#000000";
+                ctx.font = "bold 16px 'Segoe UI', sans-serif";
+                ctx.fillText(locationNames[i], pos.x + 150, pos.y + 30);
+                
+                // Description placeholder
+                ctx.font = "14px 'Segoe UI', sans-serif";
+                ctx.fillText("Descrição do local com recursos de", pos.x + 150, pos.y + 60);
+                ctx.fillText("acessibilidade disponíveis.", pos.x + 150, pos.y + 80);
+                
+                // Feature tags
+                const tagColors = ["#ff6b6b", "#4ecdc4", "#ffd166", "#6a0572", "#ff9a3c"];
+                
+                for (let j = 0; j < 2 + (i % 3); j++) {
+                    ctx.fillStyle = tagColors[j % tagColors.length];
+                    ctx.fillRect(pos.x + 150 + (j * 80), pos.y + 100, 70, 25);
+                    
+                    ctx.fillStyle = "#ffffff";
+                    ctx.font = "12px 'Segoe UI', sans-serif";
+                    ctx.fillText("Recurso " + (j+1), pos.x + 155 + (j * 80), pos.y + 117);
+                }
+            });
+            
+            // Desenhar rodapé
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, height - 60, width, 60);
+            
+            ctx.fillStyle = "#000000";
+            ctx.font = "14px 'Segoe UI', sans-serif";
+            ctx.fillText("Aplicativo de Acessibilidade da Orla da Atalaia - Aracaju", 20, height - 30);
+            ctx.fillText("Desenvolvido para promover a inclusão e facilitar o acesso para todos", 20, height - 10);
+        }
+        
+        // Função para desenhar imagens de locais
+        function drawLocationImage(ctx, width, height, name) {
+            // Limpar o canvas
+            ctx.clearRect(0, 0, width, height);
+            
+            // Desenhar fundo
+            ctx.fillStyle = "#f5f5f5";
+            ctx.fillRect(0, 0, width, height);
+            
+            // Desenhar imagem estilizada baseada no tipo de local
+            let color = "#0078d7";
+            let icon = "";
+            
+            if (name.includes("Rampa")) {
+                color = "#ff6b6b";
+                icon = "♿";
+            } else if (name.includes("Banheiro")) {
+                color = "#4ecdc4";
+                icon = "🚻";
+            } else if (name.includes("Estacionamento")) {
+                color = "#ffd166";
+                icon = "🅿️";
+            } else if (name.includes("Piso")) {
+                color = "#6a0572";
+                icon = "👣";
+            } else if (name.includes("Informações")) {
+                color = "#ff9a3c";
+                icon = "ℹ️";
+            } else if (name.includes("Restaurante")) {
+                color = "#1a535c";
+                icon = "🍽️";
+            } else if (name.includes("Playground")) {
+                color = "#ff9a3c";
+                icon = "🧒";
+            } else if (name.includes("Mirante")) {
+                color = "#6a0572";
+                icon = "🏞️";
+            }
+            
+            // Desenhar área colorida
+            ctx.fillStyle = color;
+            ctx.fillRect(0, 0, width, height);
+            
+            // Desenhar ícone
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "100px Arial";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(icon, width/2, height/2 - 20);
+            
+            // Desenhar texto
+            ctx.font = "bold 24px 'Segoe UI', sans-serif";
+            ctx.fillText(name, width/2, height - 50);
+        }
+        
+        // Função para baixar imagem
+        function downloadImage(canvasId, filename) {
+            const canvas = document.getElementById(canvasId);
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        // Inicializar ícones do PWA
+        function initIcons() {
+            const iconGrid = document.getElementById('icon-grid');
+            
+            iconSizes.forEach(size => {
+                const div = document.createElement('div');
+                div.className = 'icon-item';
+                
+                const canvas = document.createElement('canvas');
+                canvas.id = `icon-${size}`;
+                canvas.className = 'icon-canvas';
+                canvas.width = size;
+                canvas.height = size;
+                
+                const ctx = canvas.getContext('2d');
+                drawAccessibilityIcon(ctx, size);
+                
+                const p = document.createElement('p');
+                p.textContent = `icon-${size}x${size}.png (${size}x${size})`;
+                
+                const button = document.createElement('button');
+                button.className = 'btn';
+                button.textContent = 'Baixar';
+                button.onclick = function() {
+                    downloadImage(`icon-${size}`, `icon-${size}x${size}.png`);
+                };
+                
+                div.appendChild(canvas);
+                div.appendChild(p);
+                div.appendChild(button);
+                
+                iconGrid.appendChild(div);
+            });
+            
+            // Inicializar ícones de atalho
+            const mapShortcutCtx = document.getElementById('map-shortcut').getContext('2d');
+            drawMapIcon(mapShortcutCtx, 96);
+            
+            const listShortcutCtx = document.getElementById('list-shortcut').getContext('2d');
+            drawListIcon(listShortcutCtx, 96);
+            
+            // Inicializar capturas de tela
+            const screen1Ctx = document.getElementById('screen1').getContext('2d');
+            drawMapScreenshot(screen1Ctx, 1280, 720);
+            
+            const screen2Ctx = document.getElementById('screen2').getContext('2d');
+            drawListScreenshot(screen2Ctx, 1280, 720);
+            
+            // Inicializar imagens de locais
+            const locationImagesContainer = document.getElementById('location-images');
+            
+            locationTypes.forEach(type => {
+                const div = document.createElement('div');
+                div.className = 'location-item';
+                
+                const canvas = document.createElement('canvas');
+                canvas.id = `location-${type.id}`;
+                canvas.className = 'location-canvas';
+                canvas.width = 400;
+                canvas.height = 300;
+                
+                const ctx = canvas.getContext('2d');
+                drawLocationImage(ctx, 400, 300, type.name);
+                
+                const p = document.createElement('p');
+                p.textContent = `${type.name} (400x300)`;
+                
+                const button = document.createElement('button');
+                button.className = 'btn';
+                button.textContent = 'Baixar';
+                button.onclick = function() {
+                    downloadImage(`location-${type.id}`, `${type.id}.png`);
+                };
+                
+                div.appendChild(canvas);
+                div.appendChild(p);
+                div.appendChild(button);
+                
+                locationImagesContainer.appendChild(div);
+            });
+        }
+        
+        // Inicializar tudo quando a página carregar
+        window.onload = function() {
+            initIcons();
+        };
+    </script>
+</body>
+</html>

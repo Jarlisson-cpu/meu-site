@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Local - Aplicativo de Acessibilidade da Orla da Atalaia</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f5f5f5;
+            color: #333;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        
+        h1 {
+            color: #0078d7;
+            margin-top: 0;
+        }
+        
+        p {
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: #0078d7;
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin: 10px;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: #005a9e;
+        }
+        
+        .instructions {
+            background-color: #f9f9f9;
+            border-left: 4px solid #0078d7;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .instructions h2 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            color: #0078d7;
+        }
+        
+        .instructions ol {
+            margin-bottom: 0;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+        }
+        
+        .note {
+            font-style: italic;
+            color: #666;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Aplicativo de Acessibilidade da Orla da Atalaia</h1>
+        
+        <p>Esta é uma página de teste para o aplicativo de acessibilidade que mostra locais com recursos de acessibilidade na Orla da Atalaia em Aracaju.</p>
+        
+        <a href="index.html" class="btn">Acessar o Aplicativo</a>
+        
+        <div class="instructions">
+            <h2>Instruções para Teste Local</h2>
+            <ol>
+                <li>Para testar todas as funcionalidades do aplicativo, incluindo o mapa e recursos offline, é recomendado usar um servidor local.</li>
+                <li>Se você tem Python instalado, pode iniciar um servidor local com o comando:
+                    <br><code>python -m http.server 8000</code> (Python 3)
+                    <br>ou<br>
+                    <code>python -m SimpleHTTPServer 8000</code> (Python 2)</li>
+                <li>Depois, acesse <a href="http://localhost:8000">http://localhost:8000</a> no seu navegador.</li>
+                <li>Para testar os recursos de acessibilidade, experimente os botões no topo da página (alto contraste, tamanho da fonte, narração).</li>
+                <li>Teste os filtros para ver diferentes tipos de locais acessíveis.</li>
+                <li>Clique nos marcadores do mapa ou nos cards para ver detalhes dos locais.</li>
+            </ol>
+        </div>
+        
+        <p class="note">Nota: Para uma experiência completa, é recomendado criar os ícones conforme as instruções no arquivo README.txt na pasta "icons".</p>
+        
+        <p>Desenvolvido para promover a inclusão e facilitar o acesso para todos.</p>
+    </div>
+</body>
+</html>
